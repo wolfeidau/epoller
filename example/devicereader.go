@@ -1,16 +1,16 @@
-package epoller
+package main
 
 import (
 	"flag"
 	"log"
-	"syscall"
+
+	. "github.com/wolfeidau/epoller"
 )
 
-var deviceFlag = flag.String("device", "/dev/kmsg", "device to use")
-var sdoutfd = syscall.Stdout
+var deviceFlag = flag.String("device", "/dev/gestic", "device to use")
 
 func lineHandler(buf []byte, n int) {
-	syscall.Write(sdoutfd, buf)
+	log.Printf("buf %x", buf)
 }
 
 func main() {

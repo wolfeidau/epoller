@@ -1,7 +1,7 @@
 package epoller
 
 const (
-	MaxEpollEvents = 32   // max events to queue
+	MaxEpollEvents = 8    // max events to queue
 	MaxReadSize    = 1024 // maximum read size
 )
 

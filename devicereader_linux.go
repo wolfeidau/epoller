@@ -5,7 +5,7 @@ import (
 	"syscall"
 )
 
-type EpollDeviceReader struct {
+type epollDeviceReader struct {
 	event  syscall.EpollEvent
 	events [MaxEpollEvents]syscall.EpollEvent
 
@@ -15,9 +15,10 @@ type EpollDeviceReader struct {
 	handler EventHandler
 }
 
+// One stop function for opening and starting device events.
 func OpenAndDispatchEvents(devicePath string, handler EventHandler) (err error) {
 
-	edr := EpollDeviceReader{handler: handler}
+	edr := epollDeviceReader{handler: handler}
 
 	defer edr.Close()
 
@@ -31,11 +32,13 @@ func OpenAndDispatchEvents(devicePath string, handler EventHandler) (err error) 
 	return
 }
 
+// Create a new device reader using the supplied event handler
 func NewDeviceReader(handler EventHandler) DeviceReader {
-	return &EpollDeviceReader{handler: handler}
+	return &epollDeviceReader{handler: handler}
 }
 
-func (edr *EpollDeviceReader) Open(devicePath string) (err error) {
+// Open the device file and register the epoll events
+func (edr *epollDeviceReader) Open(devicePath string) (err error) {
 	// open the device
 	edr.fd, err = syscall.Open(devicePath, os.O_RDONLY, 0666)
 
@@ -60,7 +63,8 @@ func (edr *EpollDeviceReader) Open(devicePath string) (err error) {
 	return
 }
 
-func (edr *EpollDeviceReader) DispatchEvents() (err error) {
+// This is a blocking routine which will start the event loop
+func (edr *epollDeviceReader) DispatchEvents() (err error) {
 
 	var nevents int
 	for {
@@ -72,13 +76,13 @@ func (edr *EpollDeviceReader) DispatchEvents() (err error) {
 
 		for ev := 0; ev < nevents; ev++ {
 			// dispatch this to avoid delays in processing
-			go edr.notifyHandler(int(edr.events[ev].Fd))
+			edr.notifyHandler(int(edr.events[ev].Fd))
 		}
 
 	}
 }
 
-func (edr *EpollDeviceReader) notifyHandler(evfd int) {
+func (edr *epollDeviceReader) notifyHandler(evfd int) {
 
 	var buf [MaxReadSize]byte
 	n, _ := syscall.Read(evfd, buf[:])
@@ -87,7 +91,8 @@ func (edr *EpollDeviceReader) notifyHandler(evfd int) {
 	}
 }
 
-func (edr *EpollDeviceReader) Close() error {
+// close the device reader and cleanup
+func (edr *epollDeviceReader) Close() error {
 	syscall.Close(edr.epfd)
 	syscall.Close(edr.fd)
 	return nil
