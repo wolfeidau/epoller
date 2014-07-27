@@ -10,7 +10,7 @@ import (
 var deviceFlag = flag.String("device", "/dev/gestic", "device to use")
 
 func lineHandler(buf []byte, n int) {
-	log.Printf("buf %x", buf)
+	log.Printf("data % X", buf)
 }
 
 func main() {
