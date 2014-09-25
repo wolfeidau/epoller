@@ -16,8 +16,6 @@
 package epoller
 
 const (
-	// MaxEpollEvents max events to queue
-	MaxEpollEvents = 8
 	// MaxReadSize maximum read size
 	MaxReadSize = 1024
 )
@@ -28,6 +26,6 @@ type EventHandler func(slice []byte, n int)
 // DeviceReader is a simple character device reader using epoll.
 type DeviceReader interface {
 	Open(devicePath string) (err error)
-	DispatchEvents() (err error)
+	DispatchEvents(queueDepth int) (err error)
 	Close() error
 }

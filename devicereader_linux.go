@@ -13,7 +13,7 @@ type epollDeviceReader struct {
 }
 
 // OpenAndDispatchEvents Blocking call which opens the character device and starts sending events.
-func OpenAndDispatchEvents(devicePath string, handler EventHandler) error {
+func OpenAndDispatchEvents(devicePath string, handler EventHandler, queueDepth int) error {
 
 	edr := epollDeviceReader{handler: handler}
 
@@ -23,7 +23,7 @@ func OpenAndDispatchEvents(devicePath string, handler EventHandler) error {
 		return err
 	}
 
-	if err := edr.DispatchEvents(); err != nil {
+	if err := edr.DispatchEvents(queueDepth); err != nil {
 		return err
 	}
 	return nil
@@ -46,10 +46,10 @@ func (edr *epollDeviceReader) Open(devicePath string) (err error) {
 }
 
 // DispatchEvents Blocking routine which sets up epoll and starts sending through events.
-func (edr *epollDeviceReader) DispatchEvents() error {
+func (edr *epollDeviceReader) DispatchEvents(queueDepth int) error {
 
 	var event syscall.EpollEvent
-	var events [MaxEpollEvents]syscall.EpollEvent
+	var events [queueDepth]syscall.EpollEvent
 
 	if err := syscall.SetNonblock(edr.fd, true); err != nil {
 		return err
